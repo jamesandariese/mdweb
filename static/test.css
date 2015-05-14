@@ -1,3 +1,28 @@
 body {
-	background-color: blue;
+	margin:50px 0px; padding:0px;
+	text-align:center;
+}
+
+
+#content {
+	text-align: left;
+	margin: 0px auto;
+	width: 500px;
+}
+
+#header {
+	height: 160px;
+	width: 400px;
+	background-image: url(/static/logo.png);
+}
+
+#left {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	width: 120px;
+}
+
+#footer {
+	padding-top: 30px;
 }
