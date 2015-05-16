@@ -31,7 +31,7 @@ var errorTemplateEnv = &atomic.Value{}
 var mdTemplateEnv = &atomic.Value{}
 
 func loadHtmlTemplates() {
-	if tmpl, err := template.New("main.template").Funcs(funcMap).ParseGlob("templates/*.template"); err != nil {
+	if tmpl, err := template.New("main.template").Funcs(funcMap).ParseGlob("site/templates/*.template"); err != nil {
 		if htmlTemplateEnv.Load() == nil {
 			log.Fatal("Couldn't load html templates:", err)
 		}
@@ -50,11 +50,11 @@ func getMdTemplateEnv() *text_template.Template {
 	return mdTemplateEnv.Load().(*text_template.Template)
 }
 func loadErrorTemplates() {
-	if tmpl, err := text_template.New("main.md").ParseGlob("errors/*.md"); err != nil {
+	if tmpl, err := text_template.New("main.md").ParseGlob("site/errors/*.md"); err != nil {
 		if errorTemplateEnv.Load() == nil {
-			log.Fatal("Couldn't load html templates:", err)
+			log.Fatal("Couldn't load error templates:", err)
 		}
-		log.Print("Error reloading html templates:", err)
+		log.Print("Error reloading error templates:", err)
 	} else {
 		errorTemplateEnv.Store(tmpl)
 	}
@@ -193,7 +193,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/static/") {
-		in, err := os.Open(r.URL.Path[1:])
+		in, err := os.Open("site/" + r.URL.Path[1:])
 		if err != nil {
 			w.WriteHeader(404)
 			return
