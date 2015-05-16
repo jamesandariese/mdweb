@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"path/filepath"
 	"fmt"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
@@ -55,11 +56,24 @@ func loadErrorTemplates() {
 	}
 }
 func loadMdTemplates() {
-	if tmpl, err := text_template.New("main.md").ParseGlob("site/*.md"); err != nil {
-		if mdTemplateEnv.Load() == nil {
-			log.Fatal("Couldn't load html templates:", err)
+	tmpl := text_template.New("nil")
+	success := false
+	if files, err := filepath.Glob("site/*.pmd"); err == nil && len(files) > 0 {
+		if _, err := tmpl.ParseFiles(files...); err != nil {
+			log.Print("Couldn't load pmd templates:", err)
+		} else {
+			success = true
 		}
-		log.Print("Error reloading html templates:", err)
+	}
+	if files, err := filepath.Glob("site/*.md"); err == nil && len(files) > 0 {
+		if _, err := tmpl.ParseFiles(files...); err != nil {
+			log.Print("Couldn't load md templates:", err)
+		} else {
+			success = true
+		}
+	}
+	if !success {
+		log.Print("Couldn't load any md or pmd templates")
 	} else {
 		mdTemplateEnv.Store(tmpl)
 	}
