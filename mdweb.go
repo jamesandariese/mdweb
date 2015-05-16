@@ -5,7 +5,7 @@ import (
 	"errors"
 	"path/filepath"
 	"fmt"
-	"github.com/microcosm-cc/bluemonday"
+	//"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"html/template"
 	"log"
@@ -137,7 +137,8 @@ func render(path string, extra interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	html := template.HTML(bluemonday.UGCPolicy().SanitizeBytes(unsafe_bytes))
+	//html := template.HTML(bluemonday.UGCPolicy().SanitizeBytes(unsafe_bytes))
+	html := template.HTML(unsafe_bytes)
 
 	var typ string
 	switch extra.(type) {
@@ -161,7 +162,8 @@ func renderMarkdownHelper(path string, extra ...interface{}) (template.HTML, err
 	}
 	unsafe_bytes, err := renderMarkdown(path, first_extra)
 	//return //template.HTML(string(x)), y
-	return template.HTML(bluemonday.UGCPolicy().SanitizeBytes(unsafe_bytes)), err
+	//return template.HTML(bluemonday.UGCPolicy().SanitizeBytes(unsafe_bytes)), err
+	return template.HTML(unsafe_bytes), err
 }
 
 func handleError(w http.ResponseWriter, r *http.Request, code int, message string) {
