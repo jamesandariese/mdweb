@@ -21,6 +21,10 @@ var funcMap = template.FuncMap{
 	"markdown": renderMarkdownHelper,
 }
 
+var textFuncMap = text_template.FuncMap{
+	"markdown": renderMarkdownHelper,
+}
+
 var htmlTemplateEnv = &atomic.Value{}
 
 var errorTemplateEnv = &atomic.Value{}
@@ -56,7 +60,7 @@ func loadErrorTemplates() {
 	}
 }
 func loadMdTemplates() {
-	tmpl := text_template.New("nil")
+	tmpl := text_template.New("nil").Funcs(textFuncMap)
 	success := false
 	if files, err := filepath.Glob("site/*.pmd"); err == nil && len(files) > 0 {
 		if _, err := tmpl.ParseFiles(files...); err != nil {
