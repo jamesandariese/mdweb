@@ -1,5 +1,11 @@
-### Welcome to Strudelland
+## Welcome to Strudelland
 
-My name is James Andariese.  I like strudels.  Nuff said.
+Welcome.  Feel free to browse.
 
-[Here's a test page](/test)
+Contained within are some photos of people and things I like.
+
+Contained within are some subjects I enjoy.
+
+I can be reached at quite literally any address at this domain.
+
+I prefer James, though.
