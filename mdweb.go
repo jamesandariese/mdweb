@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"sync"
 	//"github.com/microcosm-cc/bluemonday"
 	"flag"
 	"github.com/russross/blackfriday"
@@ -18,8 +19,8 @@ import (
 	"time"
 )
 
-var listen = flag.String("-listen", ":4080", "listen address")
-var site = flag.String("-side", "./site", "site directory")
+var listen = flag.String("listen", ":4080", "listen address")
+var site = flag.String("site", "./site", "site directory")
 
 var funcMap = template.FuncMap{
 	"markdown": renderMarkdownHelper,
@@ -87,11 +88,14 @@ func loadMdTemplates() {
 	}
 }
 
+var templateOnceLoader sync.Once
+
 func loadTemplates() {
 	// html templates can contain markdown.  reload it first or it'll be delayed by 10s
 	loadMdTemplates()
 	loadHtmlTemplates()
 	loadErrorTemplates()
+	templateOnceLoader.Do(func() { go reload() })
 }
 
 func reload() {
@@ -99,11 +103,6 @@ func reload() {
 		time.Sleep(10 * time.Second)
 		loadTemplates()
 	}
-}
-
-func init() {
-	loadTemplates()
-	go reload()
 }
 
 type Error struct {
@@ -188,10 +187,10 @@ func handleError(w http.ResponseWriter, r *http.Request, code int, message strin
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr, r.RequestURI)
 
-        // transform the path a bit, if needed
-        if r.URL.Path == "/robots.txt" {
-                r.URL.Path = "/static/robots.txt"
-        }
+	// transform the path a bit, if needed
+	if r.URL.Path == "/robots.txt" {
+		r.URL.Path = "/static/robots.txt"
+	}
 
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/index", 302)
@@ -205,7 +204,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(r.URL.Path, "/static/") {
 		in, err := os.Open(filepath.Join(*site, r.URL.Path[1:]))
 		if err != nil {
-                        handleError(w, r, 404, r.URL.Path)
+			handleError(w, r, 404, r.URL.Path)
 			return
 		}
 		defer in.Close()
@@ -235,6 +234,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
+	loadTemplates()
 	http.HandleFunc("/", handler)
 	if err := http.ListenAndServe(*listen, nil); err != nil {
 		log.Fatal(err)
