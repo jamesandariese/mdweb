@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	//"github.com/microcosm-cc/bluemonday"
+	"flag"
 	"github.com/russross/blackfriday"
 	"html/template"
 	"log"
@@ -16,6 +17,9 @@ import (
 	texttemplate "text/template"
 	"time"
 )
+
+var listen = flag.String("-listen", ":4080", "listen address")
+var site = flag.String("-side", "./site", "site directory")
 
 var funcMap = template.FuncMap{
 	"markdown": renderMarkdownHelper,
@@ -31,7 +35,7 @@ var errorTemplateEnv = &atomic.Value{}
 var mdTemplateEnv = &atomic.Value{}
 
 func loadHtmlTemplates() {
-	if tmpl, err := template.New("main.template").Funcs(funcMap).ParseGlob("site/templates/*.template"); err != nil {
+	if tmpl, err := template.New("main.template").Funcs(funcMap).ParseGlob(filepath.Join(*site, "templates/*.template")); err != nil {
 		if htmlTemplateEnv.Load() == nil {
 			log.Fatal("Couldn't load html templates:", err)
 		}
@@ -50,7 +54,7 @@ func getMdTemplateEnv() *texttemplate.Template {
 	return mdTemplateEnv.Load().(*texttemplate.Template)
 }
 func loadErrorTemplates() {
-	if tmpl, err := texttemplate.New("main.md").ParseGlob("site/errors/*.md"); err != nil {
+	if tmpl, err := texttemplate.New("main.md").ParseGlob(filepath.Join(*site, "errors/*.md")); err != nil {
 		if errorTemplateEnv.Load() == nil {
 			log.Fatal("Couldn't load error templates:", err)
 		}
@@ -62,14 +66,14 @@ func loadErrorTemplates() {
 func loadMdTemplates() {
 	tmpl := texttemplate.New("nil").Funcs(textFuncMap)
 	success := false
-	if files, err := filepath.Glob("site/*.pmd"); err == nil && len(files) > 0 {
+	if files, err := filepath.Glob(filepath.Join(*site, "*.pmd")); err == nil && len(files) > 0 {
 		if _, err := tmpl.ParseFiles(files...); err != nil {
 			log.Print("Couldn't load pmd templates:", err)
 		} else {
 			success = true
 		}
 	}
-	if files, err := filepath.Glob("site/*.md"); err == nil && len(files) > 0 {
+	if files, err := filepath.Glob(filepath.Join(*site, "*.md")); err == nil && len(files) > 0 {
 		if _, err := tmpl.ParseFiles(files...); err != nil {
 			log.Print("Couldn't load md templates:", err)
 		} else {
@@ -183,6 +187,12 @@ func handleError(w http.ResponseWriter, r *http.Request, code int, message strin
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr, r.RequestURI)
+
+        // transform the path a bit, if needed
+        if r.URL.Path == "/robots.txt" {
+                r.URL.Path = "/static/robots.txt"
+        }
+
 	if r.URL.Path == "/" {
 		http.Redirect(w, r, "/index", 302)
 		return
@@ -193,9 +203,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.HasPrefix(r.URL.Path, "/static/") {
-		in, err := os.Open("site/" + r.URL.Path[1:])
+		in, err := os.Open(filepath.Join(*site, r.URL.Path[1:]))
 		if err != nil {
-			w.WriteHeader(404)
+                        handleError(w, r, 404, r.URL.Path)
 			return
 		}
 		defer in.Close()
@@ -224,8 +234,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	flag.Parse()
 	http.HandleFunc("/", handler)
-	if err := http.ListenAndServe(":4080", nil); err != nil {
+	if err := http.ListenAndServe(*listen, nil); err != nil {
 		log.Fatal(err)
 	}
 }
