@@ -8,10 +8,12 @@ ADD . /go/src/strudelline.net/mdweb
 # Build the outyet command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN go install strudelline.net/mdweb
+RUN go get github.com/russross/blackfriday && go install strudelline.net/mdweb
 
 # Run the outyet command by default when the container starts.
-ENTRYPOINT /go/bin/mdweb
+ENTRYPOINT /go/bin/mdweb -site /site
 
 # Document that the service listens on port 8080.
-EXPOSE 8080
+EXPOSE 4080
+
+VOLUME /site
