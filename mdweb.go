@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"errors"
-	"path/filepath"
 	"fmt"
+	"path/filepath"
 	//"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"html/template"
@@ -13,7 +13,7 @@ import (
 	"os"
 	"strings"
 	"sync/atomic"
-	text_template "text/template"
+	texttemplate "text/template"
 	"time"
 )
 
@@ -21,7 +21,7 @@ var funcMap = template.FuncMap{
 	"markdown": renderMarkdownHelper,
 }
 
-var textFuncMap = text_template.FuncMap{
+var textFuncMap = texttemplate.FuncMap{
 	"markdown": renderMarkdownHelper,
 }
 
@@ -43,14 +43,14 @@ func loadHtmlTemplates() {
 func getHtmlTemplateEnv() *template.Template {
 	return htmlTemplateEnv.Load().(*template.Template)
 }
-func getErrorTemplateEnv() *text_template.Template {
-	return errorTemplateEnv.Load().(*text_template.Template)
+func getErrorTemplateEnv() *texttemplate.Template {
+	return errorTemplateEnv.Load().(*texttemplate.Template)
 }
-func getMdTemplateEnv() *text_template.Template {
-	return mdTemplateEnv.Load().(*text_template.Template)
+func getMdTemplateEnv() *texttemplate.Template {
+	return mdTemplateEnv.Load().(*texttemplate.Template)
 }
 func loadErrorTemplates() {
-	if tmpl, err := text_template.New("main.md").ParseGlob("site/errors/*.md"); err != nil {
+	if tmpl, err := texttemplate.New("main.md").ParseGlob("site/errors/*.md"); err != nil {
 		if errorTemplateEnv.Load() == nil {
 			log.Fatal("Couldn't load error templates:", err)
 		}
@@ -60,7 +60,7 @@ func loadErrorTemplates() {
 	}
 }
 func loadMdTemplates() {
-	tmpl := text_template.New("nil").Funcs(textFuncMap)
+	tmpl := texttemplate.New("nil").Funcs(textFuncMap)
 	success := false
 	if files, err := filepath.Glob("site/*.pmd"); err == nil && len(files) > 0 {
 		if _, err := tmpl.ParseFiles(files...); err != nil {
