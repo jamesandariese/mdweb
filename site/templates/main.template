@@ -14,12 +14,25 @@
 <body>
 <div class="container">
 <div class="blog-header">
-{{ markdown "header.pmd" }}
+{{ markdown "header.pmd" . }}
 </div>
 <div class="col-sm-8 blog-main">
 <div class="blog-post">
-{{.}}
+{{.HTML}}
 </div>
+{{/* if eq .R.Form.debug "yes" */}}
+{{ if .R.Form.debug }}
+{{ $debug := index .R.Form.debug 0 }}
+{{ if eq $debug "true" }}
+<div class="blog-post">
+	Debug: {{ index .R.Form.debug 0 }}
+</div>
+<div class="blog-post">
+Request: {{ .R | printf "%#v"}}
+</div>
+{{ end }}
+{{ end }}
+{{/* end */}}
 </div>
 <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
 {{markdown "sidebar.pmd"}}
@@ -33,4 +46,5 @@
 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 </body>
+
 </html>

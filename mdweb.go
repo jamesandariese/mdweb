@@ -19,6 +19,12 @@ import (
 	"time"
 )
 
+type Page struct {
+	R        *http.Request
+	HTML     template.HTML
+	Template string
+}
+
 var listen = flag.String("listen", ":4080", "listen address")
 var site = flag.String("site", "./site", "site directory")
 
@@ -107,6 +113,7 @@ func reload() {
 
 type Error struct {
 	Code int
+	Path string
 }
 
 var ErrNotFound = errors.New("Not Found")
@@ -139,7 +146,7 @@ func renderMarkdown(path string, extra interface{}) ([]byte, error) {
 	return unsafe, nil
 }
 
-func render(path string, extra interface{}) ([]byte, error) {
+func render(path string, extra interface{}, r *http.Request) ([]byte, error) {
 	unsafe_bytes, err := renderMarkdown(path, extra)
 	if err != nil {
 		return nil, err
@@ -156,7 +163,7 @@ func render(path string, extra interface{}) ([]byte, error) {
 	}
 
 	buf := &bytes.Buffer{}
-	if err := getHtmlTemplateEnv().ExecuteTemplate(buf, typ+".template", html); err != nil {
+	if err := getHtmlTemplateEnv().ExecuteTemplate(buf, typ+".template", &Page{r, html, typ}); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
@@ -176,7 +183,7 @@ func renderMarkdownHelper(path string, extra ...interface{}) (template.HTML, err
 func handleError(w http.ResponseWriter, r *http.Request, code int, message string) {
 	w.WriteHeader(code)
 	errorPage := fmt.Sprintf("%d.md", code)
-	if byts, err := render(errorPage, &Error{code}); err != nil {
+	if byts, err := render(errorPage, &Error{code, r.URL.Path}, r); err != nil {
 		//w.Write([]byte("???"))
 		fmt.Fprintf(w, "%d: %v\n", code, err)
 	} else {
@@ -186,6 +193,8 @@ func handleError(w http.ResponseWriter, r *http.Request, code int, message strin
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.RemoteAddr, r.RequestURI)
+
+	r.ParseForm()
 
 	// transform the path a bit, if needed
 	if r.URL.Path == "/robots.txt" {
@@ -223,7 +232,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, 404, r.URL.Path)
 		return
 	}
-	if byts, err := render(r.URL.Path[1:]+".md", nil); err != nil {
+	if byts, err := render(r.URL.Path[1:]+".md", nil, r); err != nil {
 		log.Printf("Error serving: %v", err)
 		handleError(w, r, 500, err.Error())
 		return
