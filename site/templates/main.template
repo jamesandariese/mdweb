@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Markdown Website</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="/static/blog.css">
+<link rel="stylesheet" href="/static/sticky-footer.css">
+<link rel="stylesheet" href="/static/mdweb.css">
+</head>
+<body>
+<div class="container">
+<div class="blog-header">
+{{ markdown "header.pmd" }}
+</div>
+<div class="col-sm-8 blog-main">
+<div class="blog-post">
+{{.}}
+</div>
+</div>
+<div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+{{markdown "sidebar.pmd"}}
+</div>
+</div>
+<footer class="blog-footer footer">
+{{markdown "copyright.pmd"}}
+</div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</body>
+</html>

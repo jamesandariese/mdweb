@@ -1,0 +1,15 @@
+{{/*
+
+Using the markdown template function, you can include
+markdown inside of html.  Note the .pmd extension. 
+This is just a normal markdown file but it won't be
+served by the webserver (p = private)
+
+*/}}
+
+<div class="sidebar-module sidebar-module-inset">
+{{markdown "sidebar-top.pmd"}}
+</div>
+<div class="sidebar-module">
+{{markdown "sidebar-links.pmd"}}
+</div>

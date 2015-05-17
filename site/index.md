@@ -1,11 +1,8 @@
-## Welcome to Strudelland
+## Welcome to `mdweb`
 
-Welcome.  Feel free to browse.
+I hope you enjoy using this product.
 
-Contained within are some photos of people and things I like.
+If you like it and it fills a need, please consider providing
+feedback, a jefferson, or whatever.
 
-Contained within are some subjects I enjoy.
-
-I can be reached at quite literally any address at this domain.
-
-I prefer James, though.
+--James Andariese
