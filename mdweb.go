@@ -27,6 +27,7 @@ type Page struct {
 
 var listen = flag.String("listen", ":4080", "listen address")
 var site = flag.String("site", "./site", "site directory")
+var staticroot = flag.Bool("static-root", true, "alias static/* to /* (slightly slower)")
 
 var funcMap = template.FuncMap{
 	"markdown": renderMarkdownHelper,
@@ -196,15 +197,24 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 
-	// transform the path a bit, if needed
-	if r.URL.Path == "/robots.txt" {
-		r.URL.Path = "/static/robots.txt"
+	if r.URL.Path == "/" {
+		r.URL.Path = "/index"
 	}
 
-	if r.URL.Path == "/" {
-		http.Redirect(w, r, "/index", 302)
-		return
+	if *staticroot {
+		if fi, err := os.Stat(filepath.Join(*site, "static", r.URL.Path[1:])); err == nil {
+			if fi.Mode().IsRegular() {
+				log.Printf("Aliasing %s to /static%s", r.URL.Path, r.URL.Path)
+				r.URL.Path = "/static" + r.URL.Path
+			}
+		}
+	} else {
+		// transform the path a bit, if needed
+		if r.URL.Path == "/robots.txt" {
+			r.URL.Path = "/static/robots.txt"
+		}
 	}
+
 	if strings.Contains(r.URL.Path, "/..") {
 		log.Println("Blocked bad URL:", r.URL.Path)
 		handleError(w, r, 404, r.URL.Path)
