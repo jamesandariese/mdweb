@@ -210,8 +210,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// transform the path a bit, if needed
-		if r.URL.Path == "/robots.txt" {
-			r.URL.Path = "/static/robots.txt"
+		switch r.URL.Path {
+		case "/robots.txt",
+			"/favicon.ico":
+			r.URL.Path = "/static" + r.URL.Path
 		}
 	}
 
